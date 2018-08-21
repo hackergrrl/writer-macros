@@ -60,6 +60,8 @@
 (defun str-join (arr sep)
   (mapconcat 'stringify arr sep))
 
+(defun-js or (&rest args) (infix "||" args))
+(defun-js not (arg) (concat "!" (wmjs-eval arg)))
 (defun-js + (&rest args) (infix "+" args))
 (defun-js * (&rest args) (infix "*" args))
 (defun-js log (&rest args) (regfunc "console.log" args))
@@ -75,6 +77,12 @@
    "function (" (str-join args ", ") ") {\n"
    (str-join (mapcar (lambda (sexp) (concat "  " (wmjs-eval sexp) "\n")) body) "")
    "}"))
+
+(defmacro-js var (name value)
+  (concat "var " (stringify name) " = " (wmjs-eval value)))
+
+(defmacro-js if (condition a b)
+  (concat "if (" (wmjs-eval condition) ") {\n  " (wmjs-eval a) "\n}"))
 
 (provide 'jswm-mode)
 
