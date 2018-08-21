@@ -1,3 +1,10 @@
+(define-minor-mode jswm-mode
+  "Enable noffle's javascript writer macros."
+  :ligher " JS-Writer-Macros"
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "<return>") 'js-eval-last-sexpr-maybe-and-newline)
+            map))
+
 (defmacro defun-js (name args &rest forms)
   `(defun
        ,(intern (concat "js/" (stringify name)))
@@ -12,13 +19,17 @@
        ,args
      ,@forms))
 
+(defun js-eval-last-sexpr-maybe-and-newline ()
+  (interactive)
+  (js-eval-last-sexpr)
+  (newline))
+
 (defun js-eval-last-sexpr ()
   (interactive)
   (backward-kill-sexp)
   (let* ((res (js-eval (read (current-kill 0)))))
 ;         (cursor-pos (string-match "{|}" res)))
-    (insert res)
-    (newline)))
+    (insert res)))
 
 (defun js-eval (obj)
   (cond
@@ -64,20 +75,23 @@
    (str-join (mapcar (lambda (sexp) (concat "  " (js-eval sexp) "\n")) body) "")
    "}"))
 
+(provide 'jswm-mode)
+
 ;;--------------------------------------------------------------------------------
 
-(+ 1 (* 2 3) "greetings!" 3)
-
-(* 2 3)
-
-"heya!"
-
-14
-
-(log "value of x" x)
-
-(require 'hyperlog 'hypercore 'kappa-core)
-
-(fn (e) (log "e" e))
-
-(global-set-key (kbd "<S-return>") 'js-eval-last-sexpr)
+;;(+ 1 (* 2 3) "greetings!" 3)
+;;
+;;(* 2 3)
+;;
+;;"heya!"
+;;
+;;14
+;;
+;;(log "value of x" x)
+;;
+;;(require 'hyperlog 'hypercore 'kappa-core)
+;;
+;;(fn (e) (log "e" e))
+;;
+;;(global-set-key (kbd "<S-return>") 'js-eval-last-sexpr)
+;;
