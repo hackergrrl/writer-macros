@@ -2,10 +2,12 @@
   `(defun
        ,(intern (concat "js/" (stringify name)))
        ,args
-     ,@forms))
+     (let* ((real-args (mapcar 'js-eval args))
+            (f (lambda ,args ,@forms)))
+     (apply f real-args))))
 
 (defmacro defmacro-js (name args &rest forms)
-  `(defmacro
+  `(defun
        ,(intern (concat "js/" (stringify name)))
        ,args
      ,@forms))
@@ -22,9 +24,8 @@
     (t                           (stringify obj))))
 
 (defun js-eval-sexpr (sexpr)
-  (let ((func (intern (concat "js/" (symbol-name (car sexpr)))))
-        (args (mapcar (lambda (a) (js-eval a)) (cdr sexpr))))
-    (apply func args)))
+  (let ((func (intern (concat "js/" (symbol-name (car sexpr))))))
+    (apply func (cdr sexpr))))
 
 (defun stringify (a) (format "%s" a))
 
@@ -44,7 +45,6 @@
 (defun str-join (arr sep)
   (mapconcat 'stringify arr sep))
 
-(defun-js quote (arg) arg)
 (defun-js + (&rest args) (infix "+" args))
 (defun-js * (&rest args) (infix "*" args))
 (defun-js log (&rest args) (regfunc "console.log" args))
@@ -62,8 +62,6 @@
    "}"))
 
 ;;--------------------------------------------------------------------------------
-
-(insert (stringify (macroexpand-1 '(defun-js foo (a b c) (+ a b c)))))
 
 (+ 1 (* 2 3) "greetings!" 3)
 
