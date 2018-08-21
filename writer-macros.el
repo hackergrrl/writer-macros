@@ -15,7 +15,10 @@
 (defun js-eval-last-sexpr ()
   (interactive)
   (backward-kill-sexp)
-  (insert (js-eval (read (current-kill 0)))))
+  (let* ((res (js-eval (read (current-kill 0)))))
+;         (cursor-pos (string-match "{|}" res)))
+    (insert res)
+    (newline)))
 
 (defun js-eval (obj)
   (cond
@@ -76,3 +79,5 @@
 (require 'hyperlog 'hypercore 'kappa-core)
 
 (fn (e) (log "e" e))
+
+(global-set-key (kbd "<S-return>") 'js-eval-last-sexpr)
