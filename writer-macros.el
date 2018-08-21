@@ -2,14 +2,14 @@
   "Enable noffle's javascript writer macros."
   :ligher " JS-Writer-Macros"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "<return>") 'js-eval-last-sexpr-maybe-and-newline)
+            (define-key map (kbd "<return>") 'wmjs-eval-last-sexpr-maybe-and-newline)
             map))
 
 (defmacro defun-js (name args &rest forms)
   `(defun
        ,(intern (concat "js/" (stringify name)))
        ,args
-     (let* ((real-args (mapcar 'js-eval args))
+     (let* ((real-args (mapcar 'wmjs-eval args))
             (f (lambda ,args ,@forms)))
      (apply f real-args))))
 
@@ -19,25 +19,26 @@
        ,args
      ,@forms))
 
-(defun js-eval-last-sexpr-maybe-and-newline ()
+(defun wmjs-eval-last-sexpr-maybe-and-newline ()
   (interactive)
-  (js-eval-last-sexpr)
+  (unless (not (and (eql (char-before) 41) (eql 0 (car (syntax-ppss)))))
+      (wmjs-eval-last-sexpr))
   (newline))
 
-(defun js-eval-last-sexpr ()
+(defun wmjs-eval-last-sexpr ()
   (interactive)
   (backward-kill-sexp)
-  (let* ((res (js-eval (read (current-kill 0)))))
+  (let* ((res (wmjs-eval (read (current-kill 0)))))
 ;         (cursor-pos (string-match "{|}" res)))
     (insert res)))
 
-(defun js-eval (obj)
+(defun wmjs-eval (obj)
   (cond
     ((eql (type-of obj) 'string) (concat "'" (stringify obj) "'"))
-    ((eql (type-of obj) 'cons)   (js-eval-sexpr obj))
+    ((eql (type-of obj) 'cons)   (wmjs-eval-sexpr obj))
     (t                           (stringify obj))))
 
-(defun js-eval-sexpr (sexpr)
+(defun wmjs-eval-sexpr (sexpr)
   (let ((func (intern (concat "js/" (symbol-name (car sexpr))))))
     (apply func (cdr sexpr))))
 
@@ -72,7 +73,7 @@
   ;; TODO: cool (format ...) string for this?
   (concat
    "function (" (str-join args ", ") ") {\n"
-   (str-join (mapcar (lambda (sexp) (concat "  " (js-eval sexp) "\n")) body) "")
+   (str-join (mapcar (lambda (sexp) (concat "  " (wmjs-eval sexp) "\n")) body) "")
    "}"))
 
 (provide 'jswm-mode)
@@ -93,5 +94,5 @@
 ;;
 ;;(fn (e) (log "e" e))
 ;;
-;;(global-set-key (kbd "<S-return>") 'js-eval-last-sexpr)
+;;(global-set-key (kbd "<S-return>") 'wmjs-eval-last-sexpr)
 ;;
