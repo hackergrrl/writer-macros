@@ -21,8 +21,10 @@
 
 (defun wmjs-eval-last-sexpr-maybe-and-newline ()
   (interactive)
-  (insert (wmjs-eval-last-sexpr))
-  (newline-and-indent))
+  (let ((start (point)))
+    (insert (wmjs-eval-last-sexpr))
+    (newline-and-indent)
+    (indent-region start (point))))
 
 (defun wmjs-eval-last-sexpr ()
   (interactive)
