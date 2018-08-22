@@ -84,6 +84,19 @@
 (defmacro-js if (condition a b)
   (concat "if (" (wmjs-eval condition) ") {\n  " (wmjs-eval a) "\n}"))
 
+(defmacro-js let (vars &rest body)
+  (concat
+   (str-join
+    (mapcar
+     (lambda (pair) (concat "var " (wmjs-eval (car pair)) " = " (wmjs-eval (cadr pair)) "\n"))
+     vars)
+    "")
+   (str-join
+    (mapcar
+     'wmjs-eval
+     body)
+    "\n")))
+
 (provide 'jswm-mode)
 
 ;;--------------------------------------------------------------------------------
