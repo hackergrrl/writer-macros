@@ -85,7 +85,9 @@
   (concat "var " (stringify name) " = " (wmjs-eval value)))
 
 (defmacro-js if (condition a b)
-  (concat "if (" (wmjs-eval condition) ") {\n  " (wmjs-eval a) "\n}"))
+  (concat "if (" (wmjs-eval condition) ") {\n"
+          "  " (wmjs-eval a) "\n} else {\n"
+          "  " (wmjs-eval b) "\n}"))
 
 (defmacro-js let (vars &rest body)
   (concat
