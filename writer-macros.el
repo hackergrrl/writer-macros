@@ -21,16 +21,13 @@
 
 (defun wmjs-eval-last-sexpr-maybe-and-newline ()
   (interactive)
-  (unless (not (and (eql (char-before) 41) (eql 0 (car (syntax-ppss)))))
-      (wmjs-eval-last-sexpr))
+  (insert (wmjs-eval-last-sexpr))
   (newline-and-indent))
 
 (defun wmjs-eval-last-sexpr ()
   (interactive)
   (backward-kill-sexp)
-  (let* ((res (wmjs-eval (read (current-kill 0)))))
-;         (cursor-pos (string-match "{|}" res)))
-    (insert res)))
+  (wmjs-eval (read (current-kill 0))))
 
 (defun wmjs-eval (obj)
   (cond
