@@ -2,7 +2,7 @@
   "Enable noffle's javascript writer macros."
   :ligher " JS-Writer-Macros"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "<return>") 'wmjs-eval-last-sexpr-maybe-and-newline)
+            (define-key map (kbd "<S-return>") 'wmjs-eval-last-sexpr-maybe-and-newline)
             map))
 
 (defmacro defun-js (name args &rest forms)
