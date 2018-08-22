@@ -39,8 +39,11 @@
     (t                           (stringify obj))))
 
 (defun wmjs-eval-sexpr (sexpr)
-  (let ((func (intern (concat "js/" (symbol-name (car sexpr))))))
-    (apply func (cdr sexpr))))
+  (let ((func (intern-soft (concat "js/" (symbol-name (car sexpr))))))
+    (if func
+        (apply func (cdr sexpr))
+      (let ((eval-args (mapcar 'wmjs-eval (cdr sexpr))))
+        (regfunc (stringify (car sexpr)) eval-args)))))
 
 (defun stringify (a) (format "%s" a))
 
