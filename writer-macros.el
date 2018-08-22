@@ -23,7 +23,7 @@
   (interactive)
   (unless (not (and (eql (char-before) 41) (eql 0 (car (syntax-ppss)))))
       (wmjs-eval-last-sexpr))
-  (newline))
+  (newline-and-indent))
 
 (defun wmjs-eval-last-sexpr ()
   (interactive)
