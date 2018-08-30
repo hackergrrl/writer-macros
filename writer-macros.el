@@ -1,107 +1,107 @@
-(define-minor-mode jswm-mode
+(define-minor-mode wmac-mode
   "Enable noffle's javascript writer macros."
-  :ligher " JS-Writer-Macros"
+  :lighter " writer-macros"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "<S-return>") 'wmjs-eval-last-sexpr-maybe-and-newline)
+            (define-key map (kbd "<S-return>") 'wmac--eval-last-sexpr-maybe-and-newline)
             map))
 
 (defmacro defun-js (name args &rest forms)
   `(defun
-       ,(intern (concat "js/" (stringify name)))
+       ,(intern (concat "js/" (wmac--stringify name)))
        ,args
-     (let* ((real-args (mapcar 'wmjs-eval args))
+     (let* ((real-args (mapcar 'wmac--eval args))
             (f (lambda ,args ,@forms)))
      (apply f real-args))))
 
 (defmacro defmacro-js (name args &rest forms)
   `(defun
-       ,(intern (concat "js/" (stringify name)))
+       ,(intern (concat "js/" (wmac--stringify name)))
        ,args
      ,@forms))
 
-(defun wmjs-eval-last-sexpr-maybe-and-newline ()
+(defun wmac--eval-last-sexpr-maybe-and-newline ()
   (interactive)
   (let ((start (point)))
-    (insert (wmjs-eval-last-sexpr))
+    (insert (wmac--eval-last-sexpr))
     (newline-and-indent)
     (indent-region start (point))))
 
-(defun wmjs-eval-last-sexpr ()
+(defun wmac--eval-last-sexpr ()
   (interactive)
   (backward-kill-sexp)
-  (wmjs-eval (read (current-kill 0))))
+  (wmac--eval (read (current-kill 0))))
 
-(defun wmjs-eval (obj)
+(defun wmac--eval (obj)
   (cond
-    ((eql (type-of obj) 'string) (concat "'" (stringify obj) "'"))
-    ((eql (type-of obj) 'cons)   (wmjs-eval-sexpr obj))
-    (t                           (stringify obj))))
+    ((eql (type-of obj) 'string) (concat "'" (wmac--stringify obj) "'"))
+    ((eql (type-of obj) 'cons)   (wmac--eval-sexpr obj))
+    (t                           (wmac--stringify obj))))
 
-(defun wmjs-eval-sexpr (sexpr)
+(defun wmac--eval-sexpr (sexpr)
   (let ((func (intern-soft (concat "js/" (symbol-name (car sexpr))))))
     (if func
         (apply func (cdr sexpr))
-      (let ((eval-args (mapcar 'wmjs-eval (cdr sexpr))))
-        (regfunc (stringify (car sexpr)) eval-args)))))
+      (let ((eval-args (mapcar 'wmac--eval (cdr sexpr))))
+        (wmac--regfunc (wmac--stringify (car sexpr)) eval-args)))))
 
-(defun stringify (a) (format "%s" a))
+(defun wmac--stringify (a) (format "%s" a))
 
-(defun infix (op args)
+(defun wmac--infix (op args)
   (concat "("
 	  (mapconcat
-	   (lambda (n) (stringify n))
+	   (lambda (n) (wmac--stringify n))
 	   args
 	   (concat " " op " "))
 	  ")"))
 
-(defun regfunc (name args)
+(defun wmac--regfunc (name args)
   (concat name "("
-	  (mapconcat 'stringify args ", ")
+	  (mapconcat 'wmac--stringify args ", ")
 	  ")"))
 
-(defun str-join (arr sep)
-  (mapconcat 'stringify arr sep))
+(defun wmac--str-join (arr sep)
+  (mapconcat 'wmac--stringify arr sep))
 
-(defun-js or (&rest args) (infix "||" args))
-(defun-js not (arg) (concat "!" (wmjs-eval arg)))
-(defun-js + (&rest args) (infix "+" args))
-(defun-js * (&rest args) (infix "*" args))
-(defun-js log (&rest args) (regfunc "console.log" args))
+(defun-js or (&rest args) (wmac--infix "||" args))
+(defun-js not (arg) (concat "!" (wmac--eval arg)))
+(defun-js + (&rest args) (wmac--infix "+" args))
+(defun-js * (&rest args) (wmac--infix "*" args))
+(defun-js log (&rest args) (wmac--regfunc "console.log" args))
 (defun-js require (&rest args)
   (mapconcat
    (lambda (sym) (concat "var " sym " = require('" sym "')"))
-   (mapcar 'stringify args)
+   (mapcar 'wmac--stringify args)
    "\n"))
 
 (defmacro-js fn (args &rest body)
   ;; TODO: cool (format ...) string for this?
   (concat
-   "function (" (str-join args ", ") ") {\n"
-   (str-join (mapcar (lambda (sexp) (concat "  " (wmjs-eval sexp) "\n")) body) "")
+   "function (" (wmac--str-join args ", ") ") {\n"
+   (wmac--str-join (mapcar (lambda (sexp) (concat "  " (wmac--eval sexp) "\n")) body) "")
    "}"))
 
 (defmacro-js var (name value)
-  (concat "var " (stringify name) " = " (wmjs-eval value)))
+  (concat "var " (wmac--stringify name) " = " (wmac--eval value)))
 
 (defmacro-js if (condition a b)
-  (concat "if (" (wmjs-eval condition) ") {\n"
-          "  " (wmjs-eval a) "\n} else {\n"
-          "  " (wmjs-eval b) "\n}"))
+  (concat "if (" (wmac--eval condition) ") {\n"
+          "  " (wmac--eval a) "\n} else {\n"
+          "  " (wmac--eval b) "\n}"))
 
 (defmacro-js let (vars &rest body)
   (concat
-   (str-join
+   (wmac--str-join
     (mapcar
-     (lambda (pair) (concat "var " (wmjs-eval (car pair)) " = " (wmjs-eval (cadr pair)) "\n"))
+     (lambda (pair) (concat "var " (wmac--eval (car pair)) " = " (wmac--eval (cadr pair)) "\n"))
      vars)
     "")
-   (str-join
+   (wmac--str-join
     (mapcar
-     'wmjs-eval
+     'wmac--eval
      body)
     "\n")))
 
-(provide 'jswm-mode)
+(provide 'wmac-mode)
 
 ;;--------------------------------------------------------------------------------
 
@@ -119,5 +119,5 @@
 ;;
 ;;(fn (e) (log "e" e))
 ;;
-;;(global-set-key (kbd "<S-return>") 'wmjs-eval-last-sexpr)
+;;(global-set-key (kbd "<S-return>") 'wmac--eval-last-sexpr)
 ;;
