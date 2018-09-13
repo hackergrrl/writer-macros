@@ -63,7 +63,8 @@
   (mapconcat 'wmac--stringify arr sep))
 
 (defun-js or (&rest args) (wmac--infix "||" args))
-(defun-js not (arg) (concat "!" (wmac--eval arg)))
+(defun-js and (&rest args) (wmac--infix "&&" args))
+(defun-js not (&rest args) (concat "!" (car args)))
 (defun-js + (&rest args) (wmac--infix "+" args))
 (defun-js * (&rest args) (wmac--infix "*" args))
 (defun-js log (&rest args) (wmac--regfunc "console.log" args))
@@ -72,6 +73,9 @@
    (lambda (sym) (concat "var " sym " = require('" sym "')"))
    (mapcar 'wmac--stringify args)
    "\n"))
+
+(defmacro-js set (var value)
+  (format "%s = %s" var (wmac--eval value)))
 
 (defmacro-js fn (args &rest body)
   ;; TODO: cool (format ...) string for this?
@@ -100,6 +104,9 @@
      'wmac--eval
      body)
     "\n")))
+
+(defmacro-js proto (class fname args &rest body)
+  (format "%s.prototype.%s = %s" class fname (wmac--eval `(fn ,args ,@body))))
 
 (provide 'wmac-mode)
 
