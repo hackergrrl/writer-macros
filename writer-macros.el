@@ -21,9 +21,8 @@
 
 (defun wmac--eval-last-sexpr-maybe-and-newline ()
   (interactive)
-  (let ((start (point)))
+  (let ((start (save-excursion (progn (backward-sexp) (point)))))
     (insert (wmac--eval-last-sexpr))
-    (newline-and-indent)
     (indent-region start (point))))
 
 (defun wmac--eval-last-sexpr ()
