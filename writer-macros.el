@@ -1,6 +1,6 @@
 (define-minor-mode wmac-mode
   "Enable noffle's javascript writer macros."
-  :lighter " writer-macros"
+  :lighter " WriterMacros"
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "<S-return>") 'wmac--eval-last-sexpr-maybe-and-newline)
             map))
